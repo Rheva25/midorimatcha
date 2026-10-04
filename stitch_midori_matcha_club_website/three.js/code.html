@@ -1,0 +1,388 @@
+<!DOCTYPE html>
+
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width,initial-scale=1.0" name="viewport"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    html, body {
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      background: #000;
+    }
+  </style>
+</head>
+<body>
+<!-- STITCH_THREEJS_START:ANIMATION_46 class="fixed inset-0 w-full h-full bg-transparent" -->
+<div class="fixed inset-0 w-full h-full bg-transparent" style="display:block;">
+<script src="https://ajax.googleapis.com/ajax/libs/threejs/r125/three.min.js"></script>
+<div id="threejs-container-ANIMATION_46" style="width:100%;height:100%"></div>
+<script>
+(function() {
+  const container = document.getElementById('threejs-container-ANIMATION_46');
+  const devicePixelRatio = window.devicePixelRatio || 1;
+  # MIDORI MATCHA CLUB — Component Mapping & Design System Specification
+**Target Stack**: Next.js 14+ (App Router) • TypeScript • Tailwind CSS • Lucide Icons  
+**Visual Status**: LOCKED & APPROVED (Derived from screens `01 — Home` through `07 — Contact` + Modal Payment Flows)  
+**Architecture Scope**: Frontend-only, static data-driven, stateful client modals/drawers.
+
+---
+
+## 01 — DESIGN TOKENS (Tailwind Config Specification)
+
+### 1.1 Color System (`tailwind.config.ts`)
+```typescript
+// tailwind.config.ts color tokens
+export const colors = {
+  surface: {
+    cream: '#FBF9F1',       // Master travertine page background
+    sand: '#F6F4EC',        // Subtle section background / alternating cards
+    card: '#FFFFFF',        // Pure white card container surface
+    muted: '#EFECE1',       // Input field background, pill track, chip backgrounds
+    dim: '#E5E1D4',         // Subtle border dividers, line separators
+  },
+  midori: {
+    DEFAULT: '#6F8F52',    // Primary brand accent / active nav / badge highlight
+    hover: '#5D7C42',      // Button hover state
+    light: '#EAF0E2',      // Soft matcha background tint for badges / notifications
+    dark: '#23331C',       // Primary CTA buttons, footer canvas, dark banner backgrounds
+    deep: '#1A2615',       // Deepest forest tone for text in dark sections
+  },
+  accent: {
+    butter: '#F5E6B8',     // Butter yellow badge accent / secondary highlight
+    terracotta: '#D47A5B', // Tag accents (e.g. seasonal strawberry, warm citrus)
+  },
+  content: {
+    primary: '#1A2016',    // Charcoal primary heading and high-contrast body
+    secondary: '#4A5345',  // Medium contrast subheadlines and narrative body
+    muted: '#7A8475',      // Captions, metadata, placeholders, hours labels
+    inverse: '#FBF9F1',    // Travertine text on deep forest green backgrounds
+  }
+};
+```
+
+### 1.2 Typography System
+* **Display / Headings**: `Epilogue` (Google Font), sans-serif with humanist flair. Paired with italic serif accents where noted.
+* **Body / UI Interface**: `Plus Jakarta Sans` or `Inter`, sans-serif.
+* **Typographic Hierarchy**:
+  * `Display Hero H1`: `text-5xl md:text-7xl font-light tracking-tight text-content-primary leading-[1.08]` (supports italic emphasis span: `font-serif italic font-normal text-midori`)
+  * `Section H2`: `text-3xl md:text-5xl font-light md:font-normal tracking-tight leading-tight`
+  * `Card / Sub-title H3`: `text-xl md:text-2xl font-medium tracking-tight`
+  * `Eyebrow / Badge`: `text-xs font-semibold tracking-widest uppercase text-midori`
+  * `Body Lead`: `text-lg md:text-xl text-content-secondary leading-relaxed font-normal`
+  * `Body Regular`: `text-base text-content-secondary leading-relaxed`
+  * `Metadata / Small`: `text-xs md:text-sm text-content-muted uppercase tracking-wider`
+
+### 1.3 Radii & Elevation Rules
+* **Interactive Actions / Pills**: `rounded-full` (`9999px`) — Navbar items, buttons, category chips, status pills.
+* **Form Inputs & Interactive Fields**: `rounded-2xl` (`16px / 1rem`) — Inputs, textareas, selects.
+* **Content Cards & Media Sheets**: `rounded-3xl` (`24px / 1.5rem` to `32px / 2rem`) — Teahouse cards, menu cards, article cards.
+* **Shadows & Elevation**:
+  * Subtle Card: `shadow-[0_4px_24px_rgba(26,32,22,0.04)]`
+  * Elevated Hover: `hover:shadow-[0_12px_36px_rgba(26,32,22,0.08)] transition-all duration-300`
+  * Modal Backdrop: `bg-content-primary/60 backdrop-blur-sm`
+  * Glass Nav: `bg-surface-cream/80 backdrop-blur-md border-b border-surface-dim/40`
+
+---
+
+## 02 — GLOBAL COMPONENTS (`/components/global/`)
+
+### 2.1 `Navbar.tsx`
+* **Visual Spec**: Sticky glassmorphism header (`h-20`), z-50, travertine tone with subtle lower border.
+* **Props**:
+  ```typescript
+  interface NavbarProps {
+    currentRoute: '/' | '/menu' | '/cart' | '/story' | '/locations' | '/journal' | '/contact';
+    cartCount?: number;
+    onOpenMobileMenu?: () => void;
+  }
+  ```
+* **Inner Elements**:
+  1. **Brand Mark**: Stylized ceremonial bowl icon + `MIDORI MATCHA CLUB` typography (`/`).
+  2. **Desktop Navigation Links** (6 routes):
+     * `Home` (`/`)
+     * `Menu` (`/menu`)
+     * `Our Story` (`/story`)
+     * `Locations` (`/locations`)
+     * `Journal` (`/journal`)
+     * `Contact` (`/contact`)
+     * *Active Route State*: Pill container `rounded-full bg-midori text-white px-4 py-1.5 font-medium text-sm`. Inactive routes: `text-content-secondary hover:text-content-primary transition-colors`.
+  3. **Right Action Utility**:
+     * **Shopping Bag Button**: Lucide `ShoppingBag` with counter badge (`bg-midori text-white text-xs rounded-full w-5 h-5 flex items-center justify-center font-bold`).
+     * **Order Now CTA**: Pill button `rounded-full bg-midori-dark text-white px-5 py-2 text-sm font-medium hover:bg-midori transition-colors`.
+     * **Mobile Hamburger**: Lucide `Menu` (hidden on `md:hidden`).
+
+### 2.2 `Footer.tsx`
+* **Visual Spec**: Full-width footer in `#F6F4EC` or `#23331C` variant.
+* **Standardized Sections**:
+  1. **Brand Statement**: *"Slow harvested, single-origin ceremonial green tea for contemporary rituals."*
+  2. **Authoritative Sanctuary Locations**:
+     * `Senopati Flagship` (Jl. Senopati No. 45, Jakarta Selatan)
+     * `BSD City Lakefront` (The Breeze BSD, Tangerang)
+     * `Royal Baroe Serang` (Jl. Veteran No. 12, Kota Serang)
+  3. **Directory Navigation**: Two columns of structured text links (*Collection* & *House*).
+  4. **Newsletter Mini-Form**: Travertine input (`rounded-full`) with `Subscribe` pill.
+  5. **Legal & Social**: Copyright 2025 Midori Matcha Club, Privacy Policy, Terms, IG/TikTok/Pinterest links.
+
+### 2.3 `Button.tsx`
+* **Variants**:
+  * `primary`: `rounded-full bg-midori-dark text-white hover:bg-midori px-7 py-3.5 text-sm font-medium transition-all shadow-sm`
+  * `secondary`: `rounded-full bg-transparent border border-midori-dark/30 text-midori-dark hover:border-midori-dark hover:bg-midori-dark/5 px-7 py-3.5 text-sm font-medium`
+  * `accent`: `rounded-full bg-midori text-white hover:bg-midori-hover px-6 py-3 text-sm font-medium`
+  * `ghost`: `text-content-primary hover:text-midori font-medium text-sm flex items-center gap-1.5`
+  * `icon`: `w-10 h-10 rounded-full bg-surface-muted flex items-center justify-center text-content-primary hover:bg-midori hover:text-white transition-colors`
+
+---
+
+## 03 — SHARED CONTENT MODULES (`/components/shared/`)
+
+### 3.1 `SectionHeader.tsx`
+* **Pattern**:
+  ```typescript
+  interface SectionHeaderProps {
+    eyebrow?: string;
+    title: string;
+    italicWord?: string;
+    description?: string;
+    align?: 'left' | 'center';
+  }
+  ```
+* **Markup Anatomy**:
+  * Eyebrow pill: `inline-block px-3 py-1 rounded-full bg-midori-light text-midori text-xs font-semibold tracking-widest uppercase mb-4`
+  * Title: `text-3xl md:text-5xl font-light tracking-tight text-content-primary` with optional italic accent: `<span className="font-serif italic text-midori">{italicWord}</span>`
+  * Supporting description: `max-w-2xl text-content-secondary text-base md:text-lg mt-3`
+
+### 3.2 `ClosingCtaBanner.tsx`
+* **Visual Spec**: Full-width or container-bounded deep forest green card (`bg-midori-dark text-surface-cream rounded-3xl p-10 md:p-16 relative overflow-hidden`).
+* **Props**:
+  * `eyebrow`: Default *"TASTE THE CRAFT"*
+  * `title`: Default *"SEE YOU OVER A MATCHA."*
+  * `description`: Default *"Drop by our sanctuaries or explore our seasonal menu and single-cultivar Uji reserve."*
+  * `primaryCta`: `{ label: "Explore Our Menu", href: "/menu" }`
+  * `secondaryCta`: `{ label: "Find a Teahouse", href: "/locations" }`
+
+### 3.3 `MenuItemCard.tsx`
+* **Visual Spec**: Elevated travertine/white card (`rounded-3xl overflow-hidden bg-white border border-surface-dim/40 p-5 flex flex-col justify-between`).
+* **Anatomy**:
+  * Aspect Ratio: `aspect-square rounded-2xl overflow-hidden mb-4 bg-surface-sand relative`
+  * Tags Pill: Absolute top-3 left-3 (`bg-white/90 backdrop-blur-sm px-2.5 py-1 rounded-full text-xs font-medium text-midori`)
+  * Title & Origin: `font-medium text-lg text-content-primary` + subtext (e.g., *"Single Cultivar Okumidori • Uji, Kyoto"*)
+  * Price Display: `font-semibold text-content-primary` formatted with `formatRupiah(price)` (`Rp 48.000`)
+  * Quick Action: Pill button `Add to Bag` or `+` quick-add trigger.
+
+### 3.4 `LocationCard.tsx`
+* **Visual Spec**: Editorial architectural card (`rounded-3xl bg-white border border-surface-dim/40 overflow-hidden flex flex-col`).
+* **Anatomy**:
+  * Image: `aspect-[16/10] object-cover w-full`
+  * Header: Sanctuary Title + Status Badge (e.g., `Open Now until 10:00 PM` in green pulse pill)
+  * Location Details: Lucide `MapPin`, full address, neighborhood.
+  * Operating Hours: Lucide `Clock`, daily schedule and last order time.
+  * Spatial Highlights: Horizontal scroll chips (`Tatami Lounge`, `Slow-Brew Chasen Bar`, `Valet Parking`).
+  * Action Bar: `Get Directions` external link + `View on Map` internal focus trigger.
+
+### 3.5 `ArticleCard.tsx`
+* **Visual Spec**: Editorial card for the Journal page and Home teasers.
+* **Anatomy**:
+  * Aspect Ratio: `aspect-[4/3] rounded-2xl overflow-hidden bg-surface-sand`
+  * Category Label: `text-xs font-semibold tracking-widest uppercase text-midori mt-4 block`
+  * Title: `text-xl font-medium text-content-primary group-hover:text-midori transition-colors line-clamp-2`
+  * Excerpt: `text-content-secondary text-sm line-clamp-2 mt-2 leading-relaxed`
+  * Metadata Footer: `text-xs text-content-muted flex items-center justify-between mt-4 border-t border-surface-dim/30 pt-3` (e.g. `OCTOBER 18, 2024 • 5 MIN READ` + arrow link).
+
+### 3.6 `JavaSanctuaryMap.tsx`
+* **Visual Spec**: Stylized vector SVG cartography of Java with stylized node pins for **Senopati**, **BSD City**, and **Serang**.
+* **Interactivity**: Hover/Click on node pins highlights the respective Sanctuary card and shows a miniature tooltip preview.
+
+---
+
+## 04 — COMMERCE & PAYMENT FLOW SPECIFICATION (`/components/commerce/`)
+
+### 4.1 `CartDrawer.tsx` / `/cart` Page Component
+* **Line Items Anatomy**:
+  * Product Thumbnail: `w-20 h-20 rounded-2xl object-cover bg-surface-sand`
+  * Description: Item Name, Cultivar, Ice/Sweetness selections.
+  * Stepper Controls: Quantity `[-] 1 [+]` in `rounded-full bg-surface-muted px-3 py-1 flex items-center gap-3`
+  * Price: Subtotal per item formatted in `Rp`.
+  * Delete Trigger: Lucide `Trash2` icon button.
+* **Order Summary Card**:
+  * Subtotal, Service / Cup Fee, Local Courier Delivery estimate.
+  * Total Price in high-contrast `text-2xl font-semibold text-content-primary`.
+  * Checkout CTA: `Proceed to Payment` triggering modal flow.
+
+### 4.2 Modal Payment Engine (`PaymentModal.tsx`)
+* **State Machine**:
+  * `paymentMethod`: `'QRIS' | 'VA' | 'CC'`
+  * `modalState`: `'SELECTION' | 'CONFIRMATION' | 'SUCCESS'`
+* **Screen 04A (QRIS Modal)**:
+  * Dynamic generated QR Code box (`w-56 h-56 mx-auto bg-white p-4 rounded-2xl shadow-inner border border-surface-dim`).
+  * Real-time countdown timer (e.g., `14:59` expiring countdown).
+  * Auto-checking polling simulator: *"Waiting for QRIS scan..."*
+* **Screen 04B (Virtual Account Modal)**:
+  * Bank Select Chips (BCA, Mandiri, BNI, BRI).
+  * 16-digit Virtual Account Number with one-click `Copy` button (`rounded-full bg-surface-muted px-4 py-2`).
+  * Step-by-step ATM / m-Banking transfer accordion instructions.
+* **Screen 04C (Credit Card Modal)**:
+  * Form inputs styled in `rounded-2xl`: Card Number, Expiration MM/YY, CVV, Cardholder Name.
+  * 3D Secure / Verified by Visa security badge in footer.
+
+---
+
+## 05 — FORM COMPONENTS (`/components/forms/`)
+
+### 5.1 Established Form Treatment Standard
+* **Input Fields (`Input.tsx`)**:
+  * Height: `h-14`
+  * Radius: `rounded-2xl` (`16px`)
+  * Surface: `bg-surface-muted/60 border border-surface-dim/60 focus:bg-white focus:border-midori focus:ring-2 focus:ring-midori/20 transition-all`
+  * Padding: `px-5 py-3.5 text-base text-content-primary placeholder:text-content-muted`
+* **Select Dropdown (`Select.tsx`)**:
+  * Same `rounded-2xl` styling with custom chevron icon and clean option list.
+* **Textarea (`Textarea.tsx`)**:
+  * Same `rounded-2xl` styling, `min-h-[140px] resize-none p-5`.
+* **Visual Hierarchy Separation (Rule Enforcement)**:
+  * Form Controls = `rounded-2xl` (16px)
+  * Action Buttons = `rounded-full` (9999px pill)
+  * Content Cards = `rounded-3xl` (24px–32px)
+
+---
+
+## 06 — APP ROUTER STRUCTURE & PAGE MAPPING
+
+```
+app/
+├── layout.tsx                # Master HTML layout, Epilogue + Plus Jakarta Sans fonts, Navbar & Footer
+├── page.tsx                  # 01 — Home (Editorial Landing Page)
+├── menu/
+│   └── page.tsx              # 02 — Our Menu (Filterable categories, item cards, quick add)
+├── cart/
+│   └── page.tsx              # 03 — Cart & Checkout (Cart review & checkout form)
+├── story/
+│   └── page.tsx              # 04 — Our Story (Heritage, 4-step ritual, terroir, wabi-sabi)
+├── locations/
+│   └── page.tsx              # 05 — Locations (3 Sanctuaries, interactive Java map, hours)
+├── journal/
+│   └── page.tsx              # 06 — Journal (Editorial publication, featured story, grid, dispatch)
+└── contact/
+    └── page.tsx              # 07 — Contact (Inquiry form, channels, collaboration, IG grid)
+```
+
+---
+
+## 07 — STATIC DATA MODEL SCHEMAS (`/data/`)
+
+```typescript
+// types/index.ts
+
+export interface SanctuaryLocation {
+  id: string;
+  name: string;
+  slug: 'senopati' | 'bsd' | 'royal-baroe';
+  region: 'Jakarta Selatan' | 'Tangerang (BSD)' | 'Kota Serang';
+  tagline: string;
+  address: string;
+  cityPostal: string;
+  operatingHours: string;
+  lastOrder: string;
+  phone: string;
+  whatsapp: string;
+  amenities: string[];
+  imageUrl: string;
+  coordinates: { lat: number; lng: number };
+  gmapsUrl: string;
+}
+
+export interface MenuItem {
+  id: string;
+  name: string;
+  category: 'ceremonial' | 'cold-whisk' | 'botanical' | 'wagashi-dessert' | 'home-reserve';
+  cultivar: string;
+  description: string;
+  price: number; // e.g. 48000
+  tags: string[]; // e.g. ["Best Seller", "Single Cultivar", "Iced"]
+  tastingNotes: string[];
+  imageUrl: string;
+}
+
+export interface JournalArticle {
+  id: string;
+  slug: string;
+  title: string;
+  category: 'MATCHA CULTURE' | 'BEHIND THE SCENES' | 'FOOD & DRINK' | 'LIFESTYLE' | 'COMMUNITY' | 'MATCHA GUIDE';
+  excerpt: string;
+  readTime: string;
+  publishDate: string;
+  author: { name: string; role: string };
+  imageUrl: string;
+  featured?: boolean;
+}
+
+export interface NavRoute {
+  label: string;
+  href: string;
+}
+
+export const NAVIGATION_ROUTES: NavRoute[] = [
+  { label: 'Home', href: '/' },
+  { label: 'Menu', href: '/menu' },
+  { label: 'Our Story', href: '/story' },
+  { label: 'Locations', href: '/locations' },
+  { label: 'Journal', href: '/journal' },
+  { label: 'Contact', href: '/contact' },
+];
+```
+
+---
+
+## 08 — RESPONSIVE ADAPTATION MATRIX
+
+| Component | Mobile (320px – 767px) | Tablet (768px – 1023px) | Desktop (1024px+) |
+|---|---|---|---|
+| **Global Navbar** | Compact logo + Cart pill + Hamburger trigger (`SlideOverDrawer`) | Standard logo + links + Cart pill + Order CTA | Full 6-link bar with active indicator + Cart + CTA |
+| **Editorial Hero** | Stacked single column (Text first, Image `aspect-[4/3]`) | 2-column balanced split | 50/50 editorial split with large typography |
+| **Menu Card Grid** | 1 column or 2-column compact cards | 2 columns with expanded tags | 3 to 4-column balanced grid |
+| **Sanctuary Cards** | 1 column vertical sequence with scrollable pills | 2 columns | 3-column comparative sanctuary cards |
+| **Java Sanctuary Map** | Scrollable SVG viewport or vertical node accordion | Full-width scaled vector map | Interactive SVG with live pin hover states |
+| **Journal Grid** | 1 column stacked cards | 2-column asymmetric grid | 3-column editorial grid |
+| **Payment Modals** | Bottom sheet drawer pattern for thumb accessibility | Centered floating dialog (`max-w-md`) | Centered floating dialog (`max-w-md`) |
+| **Closing CTA Banner** | Vertical stacked buttons (`w-full`) | Horizontal buttons | Horizontal side-by-side CTA buttons |
+
+---
+
+## 09 — INTERACTION & STATE CLASSIFICATION
+
+1. **Client UI State (`'use client'`)**:
+   * Mobile menu toggle open/close.
+   * Menu category tab filter (`all`, `ceremonial`, `iced`, `sweets`).
+   * Active payment modal popup (`QRIS`, `VA`, `Credit Card`) and simulated countdown timer.
+   * Shopping bag quantity counter and item removal in Cart.
+   * Interactive Java Sanctuary map node tooltips.
+2. **Static Navigation (`Link` from `next/link`)**:
+   * Header route switches (`/`, `/menu`, `/story`, `/locations`, `/journal`, `/contact`).
+   * CTAs linking between screens (`Explore Our Menu`, `View Sanctuary`, `Read Full Story`).
+3. **Form State (Local React state / React Hook Form)**:
+   * Contact inquiry inputs and submission toast notification.
+   * Newsletter email inputs in footer and Journal page.
+
+---
+
+## 10 — DEVELOPER IMPLEMENTATION CHECKLIST
+
+* [ ] Set up Next.js 14+ App Router project with TypeScript.
+* [ ] Configure `tailwind.config.ts` with the Midori tokens extracted above.
+* [ ] Load Google Fonts `Epilogue` and `Plus Jakarta Sans` via `next/font/google`.
+* [ ] Implement helper utility: `export const formatRupiah = (val: number) => "Rp " + val.toLocaleString("id-ID");`
+* [ ] Build `/components/global/` (`Navbar.tsx`, `Footer.tsx`, `Button.tsx`).
+* [ ] Build `/components/shared/` (`SectionHeader.tsx`, `ClosingCtaBanner.tsx`, `MenuItemCard.tsx`, `LocationCard.tsx`, `ArticleCard.tsx`).
+* [ ] Build `/components/forms/` with the codified `rounded-2xl` standard.
+* [ ] Seed static data arrays in `/data/` for Sanctuaries, Menu Items, and Articles.
+* [ ] Assemble all 6 main pages in `/app/` and verify responsive layouts across mobile, tablet, and desktop breakpoints.
+
+})();
+</script>
+</div>
+<!-- STITCH_THREEJS_END:ANIMATION_46 -->
+</body>
+</html>
