@@ -1,10 +1,10 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { 
-  X, QrCode, Copy, ShieldCheck, 
-  CreditCard, Loader2, Info, Lock, 
-  Smartphone, Monitor, Building, Zap, 
+import {
+  X, QrCode, Copy, ShieldCheck,
+  CreditCard, Loader2, Info, Lock,
+  Smartphone, Monitor, Building, Zap,
   ArrowLeftRight
 } from "lucide-react";
 import { Button } from "./Button";
@@ -77,7 +77,7 @@ export function PaymentModal({ isOpen, onClose, method, amount, fulfillment, san
   return (
     <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 sm:p-6 bg-[#142016]/65 backdrop-blur-md overflow-y-auto">
       {/* Modal Card Dialog */}
-      <div 
+      <div
         className="relative w-full max-w-2xl bg-surface-cream rounded-2xl shadow-2xl overflow-hidden my-auto animate-in fade-in zoom-in-95 duration-200"
         role="dialog"
       >
@@ -120,7 +120,7 @@ export function PaymentModal({ isOpen, onClose, method, amount, fulfillment, san
               </span>
             </div>
             {/* Close Modal Trigger */}
-            <button 
+            <button
               onClick={onClose}
               disabled={isProcessing}
               className="w-10 h-10 rounded-full bg-surface-sand hover:bg-white transition-colors flex items-center justify-center text-muted-text hover:text-content-primary border border-transparent hover:border-border-subtle disabled:opacity-50"
@@ -132,7 +132,7 @@ export function PaymentModal({ isOpen, onClose, method, amount, fulfillment, san
 
         {/* Main Body Container */}
         <div className="px-6 sm:px-8 pb-8 space-y-6">
-          
+
           {/* Order & Amount Highlight Card */}
           <div className="bg-white rounded-2xl p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4 shadow-sm border border-border-subtle">
             <div>
@@ -147,9 +147,9 @@ export function PaymentModal({ isOpen, onClose, method, amount, fulfillment, san
                 <Building className="w-4 h-4 text-midori-green" />
                 <span>{fulfillment === "delivery" ? "Express Delivery" : `${sanctuary.split(',')[0]} Pickup`}</span>
               </div>
-              <button 
+              <button
                 onClick={() => setShowBreakdown(!showBreakdown)}
-                className="w-8 h-8 rounded-full bg-surface-sand hover:bg-white transition-colors flex items-center justify-center text-muted-text border border-transparent hover:border-border-subtle" 
+                className="w-8 h-8 rounded-full bg-surface-sand hover:bg-white transition-colors flex items-center justify-center text-muted-text border border-transparent hover:border-border-subtle"
                 title="Lihat rincian tagihan"
               >
                 <Info className="w-4 h-4" />
@@ -178,12 +178,12 @@ export function PaymentModal({ isOpen, onClose, method, amount, fulfillment, san
                   </div>
                   <span className="font-epilogue text-[0.625rem] tracking-widest text-muted-text uppercase font-bold">Pembayaran Nasional</span>
                 </div>
-                
+
                 {/* QR Code Graphic */}
                 <div className="relative p-4 bg-white rounded-xl shadow-inner border border-border-subtle flex flex-col items-center">
                   <div className="w-48 h-48 bg-white flex items-center justify-center p-2 rounded-lg">
-                    <QRCodeSVG 
-                      value={`https://midorimatchaclub.com/pay/qris?order=MMC-8291&amount=${amount}`}
+                    <QRCodeSVG
+                      value={`https://midorimatcha.vercel.app/pay/qris?order=MMC-8291&amount=${amount}`}
                       size={180}
                       bgColor={"#ffffff"}
                       fgColor={"#2A3F1F"} // midori-dark
@@ -252,14 +252,13 @@ export function PaymentModal({ isOpen, onClose, method, amount, fulfillment, san
                   </div>
                   <div className="grid grid-cols-3 gap-3">
                     {['bca', 'mandiri', 'bni'].map((bank) => (
-                      <button 
+                      <button
                         key={bank}
                         onClick={() => setSelectedBank(bank as any)}
-                        className={`p-3 rounded-xl border flex flex-col items-center justify-center gap-1 transition-all ${
-                          selectedBank === bank 
-                            ? 'bg-midori-light border-midori-green text-midori-dark' 
+                        className={`p-3 rounded-xl border flex flex-col items-center justify-center gap-1 transition-all ${selectedBank === bank
+                            ? 'bg-midori-light border-midori-green text-midori-dark'
                             : 'bg-surface-sand border-transparent hover:bg-surface-cream text-muted-text'
-                        }`}
+                          }`}
                       >
                         <span className={`font-epilogue text-lg font-bold tracking-tighter uppercase ${selectedBank === bank ? 'text-midori-dark' : 'text-content-primary'}`}>{bank}</span>
                         <span className="font-epilogue text-[0.625rem] uppercase font-bold tracking-widest opacity-80">Virtual Acc</span>
@@ -279,7 +278,7 @@ export function PaymentModal({ isOpen, onClose, method, amount, fulfillment, san
                     </div>
                     <p className="font-jakarta text-sm text-muted-text">Atas Nama: <span className="font-bold text-content-primary uppercase">MIDORI MATCHA - {fulfillment === "delivery" ? "ONLINE" : sanctuary.split(',')[0].toUpperCase()}</span></p>
                   </div>
-                  <button 
+                  <button
                     onClick={() => copyToClipboard(vaNumbers[selectedBank], 'VA Number')}
                     className="inline-flex items-center justify-center gap-2 px-5 py-3 rounded-full bg-midori-green hover:bg-midori-dark text-white transition-all font-jakarta text-sm font-bold shadow-md flex-shrink-0"
                   >
@@ -309,7 +308,7 @@ export function PaymentModal({ isOpen, onClose, method, amount, fulfillment, san
                     <CreditCard className="w-5 h-5 text-muted-text absolute left-3 top-1/2 -translate-y-1/2" />
                   </div>
                 </div>
-                
+
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-1.5">
                     <label className="font-epilogue text-[0.6875rem] uppercase font-bold text-muted-text tracking-widest">Expiry Date</label>
@@ -333,16 +332,16 @@ export function PaymentModal({ isOpen, onClose, method, amount, fulfillment, san
 
         {/* Modal Footer Action Bar */}
         <div className="px-6 sm:px-8 py-5 bg-white border-t border-border-subtle flex flex-col sm:flex-row items-center justify-between gap-4">
-          <button 
+          <button
             onClick={onClose}
             className="w-full sm:w-auto px-5 py-3 rounded-full bg-surface-sand hover:bg-surface-cream transition-colors text-content-primary font-jakarta text-sm font-bold flex items-center justify-center gap-2 border border-border-subtle"
           >
             <ArrowLeftRight className="w-4 h-4" />
             <span>Ganti Metode Pembayaran</span>
           </button>
-          
-          <Button 
-            variant="primary" 
+
+          <Button
+            variant="primary"
             className="w-full sm:w-auto bg-midori-green hover:bg-midori-dark text-white px-8 py-3 rounded-full font-epilogue font-bold flex items-center justify-center gap-2 shadow-md transition-all disabled:opacity-50"
             onClick={handleSimulatePayment}
             disabled={isProcessing || timeLeft === 0}
